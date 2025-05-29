@@ -1,0 +1,296 @@
+/* Rankolab Admin Theme - Based on logo colors */
+
+:root {
+  --rankolab-teal: #4CD4A9;
+  --rankolab-blue: #3B85C7;
+  --rankolab-gradient-start: #4CD4A9;
+  --rankolab-gradient-end: #3B85C7;
+  --rankolab-dark: #1E2A38;
+  --rankolab-light: #F5F9FC;
+  --rankolab-gray: #6C757D;
+  --rankolab-success: #28A745;
+  --rankolab-danger: #DC3545;
+  --rankolab-warning: #FFC107;
+  --rankolab-info: #17A2B8;
+}
+
+/* Main Layout Styles */
+body {
+  background-color: #f8f9fa;
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+}
+
+.sidebar {
+  background: linear-gradient(135deg, var(--rankolab-gradient-start), var(--rankolab-gradient-end));
+  color: white;
+  min-height: 100vh;
+}
+
+.sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 5px;
+  margin-bottom: 5px;
+  transition: all 0.3s;
+}
+
+.sidebar .nav-link:hover, 
+.sidebar .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.sidebar .nav-link i {
+  margin-right: 10px;
+  width: 20px;
+  text-align: center;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand img {
+  margin-right: 10px;
+  height: 30px;
+}
+
+.main-content {
+  padding: 20px;
+}
+
+/* Card Styles */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  border-radius: 10px 10px 0 0 !important;
+}
+
+.card-header i {
+  margin-right: 10px;
+  color: var(--rankolab-blue);
+}
+
+/* Stat Cards */
+.stat-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card .card-body {
+  padding: 20px;
+}
+
+.stat-card h5 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+.stat-card h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 10px 0;
+}
+
+.stat-card .icon {
+  font-size: 2.5rem;
+  opacity: 0.8;
+}
+
+.stat-card .card-footer {
+  background: rgba(0, 0, 0, 0.1);
+  border-top: none;
+  padding: 10px 20px;
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--rankolab-gradient-start), var(--rankolab-gradient-end));
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #2DCE89, #2BB673);
+}
+
+.bg-gradient-info {
+  background: linear-gradient(135deg, #11CDEF, #1171EF);
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #FB6340, #FBB140);
+}
+
+.bg-gradient-danger {
+  background: linear-gradient(135deg, #F5365C, #F56036);
+}
+
+/* Button Styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--rankolab-gradient-start), var(--rankolab-gradient-end));
+  border: none;
+}
+
+.btn-outline-primary {
+  color: var(--rankolab-blue);
+  border-color: var(--rankolab-blue);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--rankolab-blue);
+  color: white;
+}
+
+/* Table Styles */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+  color: var(--rankolab-dark);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(59, 133, 199, 0.05);
+}
+
+/* Form Styles */
+.form-control {
+  border-radius: 5px;
+  border: 1px solid #e9ecef;
+  padding: 10px 15px;
+}
+
+.form-control:focus {
+  border-color: var(--rankolab-blue);
+  box-shadow: 0 0 0 0.2rem rgba(59, 133, 199, 0.25);
+}
+
+/* AI Agent Console */
+.console-container {
+  background-color: var(--rankolab-dark);
+  border-radius: 10px;
+  padding: 20px;
+  color: white;
+  font-family: 'Courier New', monospace;
+}
+
+.console-line {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.console-input {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.console-input:focus {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+/* Chart Containers */
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    min-height: auto;
+  }
+  
+  .stat-card h2 {
+    font-size: 1.5rem;
+  }
+  
+  .stat-card .icon {
+    font-size: 1.8rem;
+  }
+}
+
+/* Animation for loading states */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Badge Styles */
+.badge-primary {
+  background-color: var(--rankolab-blue);
+}
+
+.badge-success {
+  background-color: var(--rankolab-success);
+}
+
+.badge-warning {
+  background-color: var(--rankolab-warning);
+  color: var(--rankolab-dark);
+}
+
+.badge-danger {
+  background-color: var(--rankolab-danger);
+}
+
+.badge-info {
+  background-color: var(--rankolab-info);
+}
+
+/* Custom Switch */
+.custom-switch .custom-control-label::before {
+  background-color: #e9ecef;
+}
+
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--rankolab-blue);
+}
+
+/* Tooltip Styles */
+.tooltip .tooltip-inner {
+  background-color: var(--rankolab-dark);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Progress Bar */
+.progress {
+  height: 8px;
+  border-radius: 4px;
+}
+
+.progress-bar {
+  background: linear-gradient(135deg, var(--rankolab-gradient-start), var(--rankolab-gradient-end));
+}

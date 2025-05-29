@@ -1,0 +1,1 @@
+// Manages static CMS pages

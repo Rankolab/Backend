@@ -1,0 +1,1 @@
+// Optional: blog categories management

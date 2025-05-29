@@ -1,0 +1,176 @@
+/* Dark Mode Theming */
+.dark {
+    --text-color: var(--text-color-dark);
+    --bg-color: var(--bg-dark);
+    --card-bg: var(--dark-bg-elevated);
+    --border-color: var(--dark-border);
+}
+
+/* Ensure all components respect theme variables */
+.dark .sidebar {
+    background-color: var(--bg-dark);
+    border-right: 1px solid var(--dark-border);
+}
+
+.dark .sidebar-header {
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.dark .menu-item {
+    color: var(--text-color-dark);
+}
+
+.dark .menu-item.active {
+    background-color: rgba(47, 216, 158, 0.2);
+    color: var(--primary-color);
+}
+
+.dark .menu-item:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .menu-label {
+    color: var(--medium-gray);
+}
+
+.dark .header {
+    background-color: var(--dark-bg-elevated);
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.dark .search-bar {
+    background-color: var(--bg-dark);
+}
+
+.dark .search-bar input {
+    color: var(--text-color-dark);
+}
+
+.dark .user-profile .user-name {
+    color: var(--text-color-dark);
+}
+
+.dark .stat-card,
+.dark .chart-card,
+.dark .recent-activity,
+.dark .card {
+    background-color: var(--dark-bg-elevated);
+    border: 1px solid var(--dark-border);
+}
+
+.dark .stat-title,
+.dark .chart-title,
+.dark .activity-title {
+    color: var(--text-color-dark);
+}
+
+.dark .stat-value,
+.dark .activity-message {
+    color: var(--text-color-dark);
+}
+
+.dark .activity-item {
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.dark .activity-time {
+    color: var(--medium-gray);
+}
+
+.dark .footer {
+    background-color: var(--dark-bg-elevated);
+    border-top: 1px solid var(--dark-border);
+}
+
+.dark .footer-text {
+    color: var(--medium-gray);
+}
+
+.dark .footer-link {
+    color: var(--medium-gray);
+}
+
+.dark .footer-link:hover {
+    color: var(--primary-color);
+}
+
+/* Ensure charts respect dark mode */
+.dark .chart-content canvas {
+    filter: brightness(0.8) contrast(1.2);
+}
+
+/* Ensure form elements respect dark mode */
+.dark input,
+.dark select,
+.dark textarea {
+    background-color: var(--bg-dark);
+    color: var(--text-color-dark);
+    border-color: var(--dark-border);
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(47, 216, 158, 0.2);
+}
+
+/* Ensure buttons respect dark mode */
+.dark .btn-secondary {
+    background-color: var(--dark-bg-elevated);
+    color: var(--text-color-dark);
+    border-color: var(--dark-border);
+}
+
+.dark .btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure tables respect dark mode */
+.dark .data-table th {
+    background-color: var(--bg-dark);
+    color: var(--text-color-dark);
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.dark .data-table td {
+    border-bottom: 1px solid var(--dark-border);
+    color: var(--text-color-dark);
+}
+
+.dark .data-table tr:hover {
+    background-color: rgba(47, 216, 158, 0.05);
+}
+
+/* Fix any SVG or icon colors in dark mode */
+.dark svg:not([fill="none"]) {
+    fill: currentColor;
+}
+
+/* Ensure proper contrast for notification badges in dark mode */
+.dark .notification-badge {
+    box-shadow: 0 0 0 2px var(--dark-bg-elevated);
+}
+
+/* Ensure proper transitions for theme changes */
+.sidebar,
+.header,
+.main-content,
+.card,
+.stat-card,
+.chart-card,
+.recent-activity,
+.footer,
+input,
+select,
+textarea,
+.btn-secondary,
+.data-table th,
+.data-table td {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Ensure mobile sidebar backdrop has proper contrast in dark mode */
+.dark .sidebar-backdrop {
+    background-color: rgba(0, 0, 0, 0.7);
+}

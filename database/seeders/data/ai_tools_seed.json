@@ -1,0 +1,34 @@
+[
+  {
+    "name": "ChatGPT (OpenAI)",
+    "type": "Text",
+    "url": "https://chat.openai.com",
+    "description": "AI chatbot powered by OpenAI for general conversation and productivity.",
+    "icon": "",
+    "is_active": true
+  },
+  {
+    "name": "Craiyon",
+    "type": "Image",
+    "url": "https://www.craiyon.com",
+    "description": "AI-powered image generator formerly known as DALL\u00b7E mini.",
+    "icon": "",
+    "is_active": true
+  },
+  {
+    "name": "Hugging Face Spaces",
+    "type": "Various",
+    "url": "https://huggingface.co/spaces",
+    "description": "Free AI tool demos covering text, vision, and audio by the community.",
+    "icon": "",
+    "is_active": true
+  },
+  {
+    "name": "Whisper Web",
+    "type": "Audio",
+    "url": "https://huggingface.co/spaces/openai/whisper",
+    "description": "Free speech-to-text demo powered by OpenAI Whisper model.",
+    "icon": "",
+    "is_active": true
+  }
+]
