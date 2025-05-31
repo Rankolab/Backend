@@ -20,57 +20,72 @@ class UsersTableSeeder extends Seeder
             DB::statement('PRAGMA foreign_keys = OFF;');
         }
 
-        // Truncate the users table first to avoid duplicate entries
-        // Use truncate which might be safer or handle constraints differently in some drivers
-        // However, raw delete is explicit. Let's stick with delete but ensure FKs are off.
-        DB::table('users')->delete(); // Use Query Builder delete which might be slightly safer than raw statement
-        
-        // Re-enable foreign key checks for SQLite after seeding if they were disabled
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = ON;');
-        }
-        
+        // Truncate the users table first
+        DB::table('users')->delete();
+
         // Create Super Admin
         User::create([
-            'name' => 'Super Admin',
+            'first_name' => 'Super',
+            'last_name' => 'Admin',
             'email' => 'superadmin@rankolab.com',
             'password' => Hash::make('password'),
             'role' => 'super_admin',
+            'status' => 'active', // Ensure status is set
             'email_verified_at' => now(),
+            'email_verified' => true, // Ensure boolean is set
         ]);
 
         // Create Admin
         User::create([
-            'name' => 'Admin User',
+            'first_name' => 'Admin',
+            'last_name' => 'User',
             'email' => 'admin@rankolab.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'status' => 'active',
             'email_verified_at' => now(),
+            'email_verified' => true,
         ]);
 
         // Create Regular Users
         User::create([
-            'name' => 'John Doe',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
             'email' => 'john@example.com',
             'password' => Hash::make('password'),
             'role' => 'user',
+            'status' => 'active',
             'email_verified_at' => now(),
+            'email_verified' => true,
         ]);
 
         User::create([
-            'name' => 'Jane Smith',
+            'first_name' => 'Jane',
+            'last_name' => 'Smith',
             'email' => 'jane@example.com',
             'password' => Hash::make('password'),
             'role' => 'user',
+            'status' => 'active',
             'email_verified_at' => now(),
+            'email_verified' => true,
         ]);
 
         User::create([
-            'name' => 'Robert Johnson',
+            'first_name' => 'Robert',
+            'last_name' => 'Johnson',
             'email' => 'robert@example.com',
             'password' => Hash::make('password'),
             'role' => 'user',
+            'status' => 'active',
             'email_verified_at' => now(),
+            'email_verified' => true,
         ]);
+
+        // Re-enable foreign key checks for SQLite after seeding if they were disabled
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON;');
+        }
     }
 }
+
+
