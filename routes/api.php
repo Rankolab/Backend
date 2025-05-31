@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\SocialMediaController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\MonitoredApiController;
+use App\Http\Controllers\Api\DomainAnalysisController; // Added Domain Analysis Controller
 
 // Admin Controllers
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -50,9 +51,9 @@ Route::post("/auth/reset-password", [AuthController::class, "resetPassword"]);
 Route::get("/plans", [SubscriptionController::class, "listPlans"]);
 
 // 🔓 Public AI Tools & Blog
-Route::get('/ai-tools', [AiToolApiController::class, 'index']);
-Route::get('/blogs', [BlogApiController::class, 'index']);
-Route::get('/blogs/{slug}', [BlogApiController::class, 'show']);
+Route::get("/ai-tools", [AiToolApiController::class, "index"]);
+Route::get("/blogs", [BlogApiController::class, "index"]);
+Route::get("/blogs/{slug}", [BlogApiController::class, "show"]);
 
 // 🔒 Protected Routes (Authenticated via Sanctum)
 Route::middleware("auth:sanctum")->group(function () {
@@ -73,35 +74,38 @@ Route::middleware("auth:sanctum")->group(function () {
 
     // Website
     Route::post("/websites", [WebsiteController::class, "store"]);
-    Route::get("/websites/{website_id}/metrics", [WebsiteController::class, "getMetrics"]);
+    Route::get("/websites/{website}/metrics", [WebsiteController::class, "getMetrics"]); // Changed {website_id} to {website} for model binding
+
+    // Domain Analysis (New)
+    Route::get("/websites/{website}/analysis", [DomainAnalysisController::class, "getAnalysis"]);
 
     // Website Design
-    Route::post("/websites/{website_id}/design", [WebsiteDesignController::class, "storeOrUpdate"]);
+    Route::post("/websites/{website}/design", [WebsiteDesignController::class, "storeOrUpdate"]); // Changed {website_id} to {website}
 
     // Content Plan
-    Route::post("/websites/{website_id}/content-plan", [ContentPlanController::class, "store"]);
+    Route::post("/websites/{website}/content-plan", [ContentPlanController::class, "store"]); // Changed {website_id} to {website}
 
     // Content
-    Route::post("/websites/{website_id}/content", [ContentController::class, "store"]);
-    Route::post("/websites/{website_id}/content/publish", [ContentController::class, "publish"]);
+    Route::post("/websites/{website}/content", [ContentController::class, "store"]); // Changed {website_id} to {website}
+    Route::post("/websites/{website}/content/publish", [ContentController::class, "publish"]); // Changed {website_id} to {website}
 
     // RSS Feeds
-    Route::post("/websites/{website_id}/rss-feeds", [RssFeedController::class, "store"]);
+    Route::post("/websites/{website}/rss-feeds", [RssFeedController::class, "store"]); // Changed {website_id} to {website}
 
     // Performance
-    Route::get("/websites/{website_id}/performance", [PerformanceController::class, "getPerformance"]);
+    Route::get("/websites/{website}/performance", [PerformanceController::class, "getPerformance"]); // Changed {website_id} to {website}
 
     // Link Building
-    Route::post("/websites/{website_id}/links", [LinkBuildingController::class, "store"]);
+    Route::post("/websites/{website}/links", [LinkBuildingController::class, "store"]); // Changed {website_id} to {website}
 
     // Social Media
-    Route::post("/websites/{website_id}/social-posts", [SocialMediaController::class, "store"]);
+    Route::post("/websites/{website}/social-posts", [SocialMediaController::class, "store"]); // Changed {website_id} to {website}
 
     // Newsletters
-    Route::post("/websites/{website_id}/newsletters", [NewsletterController::class, "store"]);
+    Route::post("/websites/{website}/newsletters", [NewsletterController::class, "store"]); // Changed {website_id} to {website}
 
     // Chatbot
-    Route::post("/websites/{website_id}/chatbot/log", [ChatbotController::class, "logInteraction"]);
+    Route::post("/websites/{website}/chatbot/log", [ChatbotController::class, "logInteraction"]); // Changed {website_id} to {website}
 
     // Monitored API
     Route::get("/monitoring/api-check", [MonitoredApiController::class, "index"]);
@@ -142,4 +146,6 @@ Route::prefix("admin")->middleware(["auth:sanctum", "admin"])->group(function ()
 });
 
 // 💳 Stripe Webhook
-Route::post('/stripe/webhook', [UserStripeWebhookController::class, 'handle']);
+Route::post("/stripe/webhook", [UserStripeWebhookController::class, "handle"]);
+
+
