@@ -9,84 +9,95 @@ use App\Models\Content;
 use App\Models\ContentPlan;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+// use App\Jobs\GenerateContentJob; // Example: Uncomment when Job is created
+// use App\Jobs\PublishContentJob; // Example: Uncomment when Job is created
 
 class ContentController extends Controller
 {
     /**
-     * Store (generate) new content for a website.
-     * Note: Actual content generation using external APIs will be handled in a separate service/job later.
-     * This endpoint currently creates a placeholder/draft record.
+     * Store a request to generate new content for a website.
+     *
+     * This endpoint creates a content record with status 'draft'
+     * and should trigger a background job for actual AI generation.
      */
-    public function store(Request $request, $website_id)
+    public function store(Request $request, Website $website) // Use route model binding
     {
-        $user = Auth::user();
-        $website = Website::where("website_id", $website_id)->where("user_id", $user->user_id)->first();
-
-        if (!$website) {
-            return response()->json(["error" => "Website not found or access denied"], 404);
+        // Authorization check
+        if (Auth::user()->id !== $website->user_id && !Auth::user()->hasRole(["admin", "super_admin"])) {
+            Log::warning("Unauthorized attempt to store content for website ID: {$website->id} by user ID: " . Auth::user()->id);
+            return response()->json(["message" => "Unauthorized"], 403);
         }
 
         $validator = Validator::make($request->all(), [
-            "plan_id" => "nullable|exists:content_plans,plan_id,website_id," . $website_id, // Ensure plan belongs to the website
+            "plan_id" => "nullable|exists:content_plans,id,website_id," . $website->id, // Ensure plan belongs to the website
             "title" => "required|string|max:255",
-            "word_count" => "required|integer|min:100", // Example minimum
+            "word_count" => "required|integer|min:100",
             "keywords" => "nullable|array",
-            "content_type" => "nullable|string|max:50", // e.g., blog, article
+            "content_type" => "nullable|string|in:blog,article,page,landing_page|max:50", // Added more types
         ]);
 
         if ($validator->fails()) {
             return response()->json(["error" => "Invalid content parameters", "details" => $validator->errors()], 400);
         }
 
-        // Placeholder: In a real scenario, trigger a job to generate content using external APIs
-        // For now, create a draft record with placeholder body
-        $generatedBody = "Placeholder content for ".$request->input("title")." - Generation pending.";
-        $generatedImageUrl = "https://via.placeholder.com/800x400.png?text=Placeholder+Image"; // Placeholder image
-
+        // Create the initial content record in the database
         $content = Content::create([
-            "website_id" => $website_id,
+            "website_id" => $website->id,
+            "user_id" => Auth::id(), // Store the user who requested it
             "plan_id" => $request->input("plan_id"),
             "title" => $request->input("title"),
-            "body" => $generatedBody, // Placeholder
+            "body" => "Content generation pending...", // Indicate generation is pending
             "word_count" => $request->input("word_count"),
-            "featured_image_url" => $generatedImageUrl, // Placeholder
-            "images" => [$generatedImageUrl], // Placeholder
-            "internal_links" => [], // Placeholder
-            "external_links" => [], // Placeholder
-            "affiliate_links" => [], // Placeholder
+            "featured_image_url" => null, // Will be set by generation job
+            "images" => [], // Will be set by generation job
+            "internal_links" => [], // Will be set by generation job
+            "external_links" => [], // Will be set by generation job
+            "affiliate_links" => [], // Will be set by generation job
             "keywords" => $request->input("keywords"),
-            "status" => "draft", // Default status
+            "content_type" => $request->input("content_type", "blog"), // Default to blog
+            "status" => "draft", // Start as draft, generation job will update
             "published_at" => null,
         ]);
 
-        // Return response as per API documentation
+        Log::info("Content record created with ID: {$content->id} for website ID: {$website->id}. Generation pending.");
+
+        // --- Trigger Background Job for AI Generation ---
+        // In a real application, dispatch a job here:
+        // GenerateContentJob::dispatch($content);
+        // Log::info("Dispatched GenerateContentJob for content ID: {$content->id}");
+        // -----------------------------------------------
+
+        // Return response indicating creation and pending generation
         $response = [
-            "content_id" => $content->content_id,
+            "message" => "Content creation request received. Generation is pending.",
+            "content_id" => $content->id,
             "website_id" => $content->website_id,
             "title" => $content->title,
             "status" => $content->status,
-            "featured_image_url" => $content->featured_image_url,
         ];
 
-        return response()->json($response, 201);
+        return response()->json($response, 202); // 202 Accepted: Request received, processing pending
     }
 
     /**
      * Publish a draft content piece.
-     * Note: Actual submission to Google Search Console will be handled later.
+     *
+     * Updates the content status to 'published' and should trigger
+     * background jobs for post-publishing tasks (e.g., GSC submission).
      */
-    public function publish(Request $request, $website_id)
+    public function publish(Request $request, Website $website) // Use route model binding
     {
-        $user = Auth::user();
-        $website = Website::where("website_id", $website_id)->where("user_id", $user->user_id)->first();
-
-        if (!$website) {
-            return response()->json(["error" => "Website not found or access denied"], 404);
+        // Authorization check
+        if (Auth::user()->id !== $website->user_id && !Auth::user()->hasRole(["admin", "super_admin"])) {
+            Log::warning("Unauthorized attempt to publish content for website ID: {$website->id} by user ID: " . Auth::user()->id);
+            return response()->json(["message" => "Unauthorized"], 403);
         }
 
         $validator = Validator::make($request->all(), [
-            "content_id" => "required|exists:content,content_id,website_id," . $website_id, // Ensure content belongs to the website
+            // Assuming content_id is passed in the request body
+            "content_id" => "required|exists:content,id,website_id," . $website->id, // Ensure content belongs to the website
         ]);
 
         if ($validator->fails()) {
@@ -95,13 +106,15 @@ class ContentController extends Controller
 
         $content = Content::find($request->input("content_id"));
 
-        if (!$content) {
-             // Should be caught by exists rule, but for robustness
-            return response()->json(["error" => "Content not found"], 404);
+        // Double check ownership just in case exists rule fails somehow
+        if (!$content || $content->website_id !== $website->id) {
+            return response()->json(["error" => "Content not found or does not belong to this website"], 404);
         }
 
+        // Ensure content is ready for publishing (e.g., not already published, generation complete)
+        // Add more checks if generation status is tracked separately
         if ($content->status !== "draft") {
-            return response()->json(["error" => "Content is not in draft status"], 400);
+            return response()->json(["error" => "Content is not in a publishable state (current status: {$content->status})"], 400);
         }
 
         // Update status and published_at timestamp
@@ -109,11 +122,18 @@ class ContentController extends Controller
         $content->published_at = Carbon::now();
         $content->save();
 
-        // Placeholder: Trigger job/event for Google Search Console submission
+        Log::info("Content ID: {$content->id} for website ID: {$website->id} published successfully.");
+
+        // --- Trigger Background Job for Post-Publishing Tasks ---
+        // e.g., Submit to Google Search Console, post to social media
+        // PublishContentJob::dispatch($content);
+        // Log::info("Dispatched PublishContentJob for content ID: {$content->id}");
+        // -------------------------------------------------------
 
         // Return response as per API documentation
         $response = [
-            "content_id" => $content->content_id,
+            "message" => "Content published successfully.",
+            "content_id" => $content->id,
             "status" => $content->status,
             "published_at" => $content->published_at->toIso8601String(),
         ];
@@ -121,5 +141,8 @@ class ContentController extends Controller
         return response()->json($response, 200);
     }
 
-    // Add other methods for managing content if needed (e.g., update, delete, get)
+    // TODO: Add methods for GET /content, GET /content/{id}, PUT /content/{id}, DELETE /content/{id}
+    // These should perform standard CRUD operations with proper authorization.
 }
+
+
