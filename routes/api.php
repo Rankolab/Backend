@@ -10,6 +10,7 @@ use App\Http\Controllers\Webhook\UserStripeWebhookController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BlogApiController;
 use App\Http\Controllers\Api\AiToolApiController;
+use App\Http\Controllers\API\SubscriptionController;
 
 // Website & Content Modules
 use App\Http\Controllers\Api\LicenseController;
@@ -39,17 +40,32 @@ use App\Http\Controllers\Admin\MonitoringController as AdminMonitoringController
 |--------------------------------------------------------------------------
 */
 
-// Public Authentication Routes
+// 🔓 Public Authentication Routes
 Route::post("/auth/register", [AuthController::class, "register"]);
 Route::post("/auth/login", [AuthController::class, "login"]);
+Route::post("/auth/forgot-password", [AuthController::class, "forgotPassword"]);
+Route::post("/auth/reset-password", [AuthController::class, "resetPassword"]);
 
-// Protected Routes (Authenticated via Sanctum)
+// 🔓 Public Subscription Routes
+Route::get("/plans", [SubscriptionController::class, "listPlans"]);
+
+// 🔓 Public AI Tools & Blog
+Route::get('/ai-tools', [AiToolApiController::class, 'index']);
+Route::get('/blogs', [BlogApiController::class, 'index']);
+Route::get('/blogs/{slug}', [BlogApiController::class, 'show']);
+
+// 🔒 Protected Routes (Authenticated via Sanctum)
 Route::middleware("auth:sanctum")->group(function () {
+    // Auth
     Route::post("/auth/logout", [AuthController::class, "logout"]);
+    Route::get("/user/profile", [AuthController::class, "getProfile"]);
+    Route::put("/user/profile", [AuthController::class, "updateProfile"]);
+    Route::get("/user", fn(Request $request) => $request->user());
 
-    Route::get("/user", function (Request $request) {
-        return $request->user();
-    });
+    // Subscriptions
+    Route::get("/subscription", [SubscriptionController::class, "getStatus"]);
+    Route::post("/subscription", [SubscriptionController::class, "create"]);
+    Route::delete("/subscription", [SubscriptionController::class, "cancel"]);
 
     // License
     Route::post("/license/validate", [LicenseController::class, "validateLicense"]);
@@ -87,11 +103,11 @@ Route::middleware("auth:sanctum")->group(function () {
     // Chatbot
     Route::post("/websites/{website_id}/chatbot/log", [ChatbotController::class, "logInteraction"]);
 
-    // Monitored API routes
+    // Monitored API
     Route::get("/monitoring/api-check", [MonitoredApiController::class, "index"]);
 });
 
-// Admin Routes
+// 🛡️ Admin Routes
 Route::prefix("admin")->middleware(["auth:sanctum", "admin"])->group(function () {
     // Dashboard
     Route::get("/dashboard/stats", [AdminDashboardController::class, "getStats"]);
@@ -111,7 +127,7 @@ Route::prefix("admin")->middleware(["auth:sanctum", "admin"])->group(function ()
     Route::get("content", [AdminContentController::class, "index"]);
     Route::get("content/{content}", [AdminContentController::class, "show"]);
 
-    // Blog Management
+    // Blogs
     Route::get("blogs", [AdminContentController::class, "indexBlogs"]);
     Route::post("blogs", [AdminContentController::class, "storeBlog"]);
     Route::get("blogs/{content}", [AdminContentController::class, "show"]);
@@ -125,12 +141,5 @@ Route::prefix("admin")->middleware(["auth:sanctum", "admin"])->group(function ()
     Route::delete("monitoring/jobs/delete/{failedJobId}", [AdminMonitoringController::class, "deleteJob"]);
 });
 
-// AI Tool (Public)
-Route::get('/ai-tools', [AiToolApiController::class, 'index']);
-
-// Stripe Webhook
+// 💳 Stripe Webhook
 Route::post('/stripe/webhook', [UserStripeWebhookController::class, 'handle']);
-
-// Blog Public
-Route::get('/blogs', [BlogApiController::class, 'index']);
-Route::get('/blogs/{slug}', [BlogApiController::class, 'show']);
