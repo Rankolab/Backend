@@ -55,7 +55,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://musical-disco-5g5j994g6pvvfv9qg-8000.app.github.dev/'),
 
     'asset_url' => env('ASSET_URL'),
 
@@ -123,8 +123,7 @@ return [
     */
 
     'key' => env('APP_KEY'),
-
-    'cipher' => 'AES-256-CBC',
+    'cipher' => env('APP_CIPHER', 'AES-256-CBC'),
 
     /*
     |--------------------------------------------------------------------------
