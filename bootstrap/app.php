@@ -1,8 +1,5 @@
 <?php
 
-use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
-use Illuminate\Encryption\Encrypter;
-
 /*
 |--------------------------------------------------------------------------
 | Create The Application
@@ -15,7 +12,7 @@ use Illuminate\Encryption\Encrypter;
 */
 
 $app = new Illuminate\Foundation\Application(
-    $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
+    $_ENV["APP_BASE_PATH"] ?? dirname(__DIR__)
 );
 
 /*
@@ -46,36 +43,6 @@ $app->singleton(
 
 /*
 |--------------------------------------------------------------------------
-| Patch: Bypass Laravel Encryption Key Validation
-|--------------------------------------------------------------------------
-|
-| This replaces Laravel's default Encrypter binding with a version that
-| tolerates an invalid or missing APP_KEY by injecting a safe fallback key.
-| This avoids the "unsupported cipher or incorrect key length" error.
-|
-*/
-
-$app->singleton(EncrypterContract::class, function ($app) {
-    $config = $app['config']['app'];
-
-    $key = $config['key'];
-
-    if (strpos($key, 'base64:') === 0) {
-        $key = base64_decode(substr($key, 7));
-    }
-
-    $cipher = $config['cipher'] ?? 'AES-256-CBC';
-
-    // Fallback: if invalid key size, use a generated 32-byte key
-    if (mb_strlen($key, '8bit') !== 32) {
-        $key = random_bytes(32);
-    }
-
-    return new Encrypter($key, $cipher);
-});
-
-/*
-|--------------------------------------------------------------------------
 | Return The Application
 |--------------------------------------------------------------------------
 |
@@ -86,3 +53,5 @@ $app->singleton(EncrypterContract::class, function ($app) {
 */
 
 return $app;
+
+
