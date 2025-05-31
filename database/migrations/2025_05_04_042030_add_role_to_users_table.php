@@ -12,9 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table("users", function (Blueprint $table) {
-            // Add role column, default to 'user', index for faster lookups
-            $table->string("role")->default("user")->after("email");
-            $table->index("role"); 
+            // Check if the column doesn't already exist before adding
+            if (!Schema::hasColumn("users", "role")) {
+                // Add role column, default to 'user', index for faster lookups
+                $table->string("role")->default("user")->after("email");
+                $table->index("role"); 
+            }
         });
     }
 
@@ -24,10 +27,16 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table("users", function (Blueprint $table) {
-            // Drop the index first, then the column
-            $table->dropIndex(["role"]);
-            $table->dropColumn("role");
+            // Check if the column exists before dropping
+            if (Schema::hasColumn("users", "role")) {
+                // Drop the index first, then the column
+                $table->dropIndex(["role"]);
+                $table->dropColumn("role");
+            }
         });
     }
 };
+
+
+
 
