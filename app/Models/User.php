@@ -144,3 +144,13 @@ class User extends Authenticatable
         return $this->hasOne(Affiliate::class);
     }
 }
+    /**
+     * Get the external API keys associated with the user.
+     */
+    public function externalApiKeys()
+    {
+        return $this->hasMany(ExternalApiKey::class);
+    }
+
+    // --- End Relationships ---
+
