@@ -149,3 +149,13 @@ Route::prefix("admin")->middleware(["auth:sanctum", "admin"])->group(function ()
 Route::post("/stripe/webhook", [UserStripeWebhookController::class, "handle"]);
 
 
+
+
+    // External API Keys (User-Managed)
+    Route::get("/user/api-keys", [\App\Http\Controllers\Api\ExternalApiKeyController::class, "index"]);
+    Route::post("/user/api-keys", [\App\Http\Controllers\Api\ExternalApiKeyController::class, "store"]);
+    Route::delete("/user/api-keys/{provider}", [\App\Http\Controllers\Api\ExternalApiKeyController::class, "destroy"]);
+
+
+
+
