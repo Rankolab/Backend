@@ -31,14 +31,73 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    // Added Hugging Face configuration inside the main array
+    // Rankolab Default/Managed API Keys & Service Configs
     'huggingface' => [
-        'api_token' => env('HUGGINGFACE_API_TOKEN'),
+        'api_token' => env('HUGGINGFACE_API_TOKEN'), // Default Rankolab key
         'inference_api_url' => env('HUGGINGFACE_INFERENCE_API_URL', 'https://api-inference.huggingface.co/models/'),
-        'image_generation_model' => env('HUGGINGFACE_IMAGE_GEN_MODEL', 'stabilityai/stable-diffusion-xl-base-1.0'), // Example model
-        'summarization_model' => env('HUGGINGFACE_SUMMARIZATION_MODEL', 'facebook/bart-large-cnn'), // Example model
-        'keyword_extraction_model' => env('HUGGINGFACE_KEYWORD_MODEL', 'ml6team/keyphrase-extraction-kbir-inspec'), // Example model
+        'image_generation_model' => env('HUGGINGFACE_IMAGE_GEN_MODEL', 'stabilityai/stable-diffusion-xl-base-1.0'),
+        'summarization_model' => env('HUGGINGFACE_SUMMARIZATION_MODEL', 'facebook/bart-large-cnn'),
+        'keyword_extraction_model' => env('HUGGINGFACE_KEYWORD_MODEL', 'ml6team/keyphrase-extraction-kbir-inspec'),
     ],
 
-]; // Ensure this is the final closing bracket for the return array
+    'google_pagespeed' => [
+        'api_key' => env('GOOGLE_PAGESPEED_API_KEY'), // Default Rankolab key
+    ],
+
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'), // Default Rankolab key (optional, might not exist)
+    ],
+
+    'serpapi' => [
+        'api_key' => env('SERPAPI_API_KEY'), // Default Rankolab key (optional, might not exist)
+    ],
+
+    'copyscape' => [
+        'username' => env('COPYSCAPE_USERNAME'), // Default Rankolab account (optional)
+        'api_key' => env('COPYSCAPE_API_KEY'), // Default Rankolab key (optional)
+    ],
+
+    'buffer' => [
+        'client_id' => env('BUFFER_CLIENT_ID'),
+        'client_secret' => env('BUFFER_CLIENT_SECRET'),
+        'redirect_uri' => env('BUFFER_REDIRECT_URI'),
+        'api_key' => env('BUFFER_API_KEY'), // Default Rankolab key (optional)
+    ],
+
+    'moz' => [
+        'access_id' => env('MOZ_ACCESS_ID'), // Default Rankolab key (optional)
+        'secret_key' => env('MOZ_SECRET_KEY'), // Default Rankolab key (optional)
+    ],
+
+    'deepai' => [
+        'api_key' => env('DEEPAI_API_KEY'), // Default Rankolab key (optional)
+    ],
+
+    'stablediffusion' => [ // Could be HuggingFace or another provider
+        'api_key' => env('STABLEDIFFUSION_API_KEY'), // Default Rankolab key (optional)
+    ],
+
+    'uptimerobot' => [
+        'api_key' => env('UPTIMEROBOT_API_KEY'), // Default Rankolab key (optional)
+    ],
+
+    'statuscake' => [
+        'api_key' => env('STATUSCAKE_API_KEY'), // Default Rankolab key (optional)
+    ],
+
+    'amazon_paapi' => [
+        'access_key' => env('AMAZON_PAAPI_ACCESS_KEY'),
+        'secret_key' => env('AMAZON_PAAPI_SECRET_KEY'),
+        'partner_tag' => env('AMAZON_PAAPI_PARTNER_TAG'),
+        'host' => env('AMAZON_PAAPI_HOST', 'webservices.amazon.com'), // Region specific
+        'region' => env('AMAZON_PAAPI_REGION', 'us-east-1'), // Region specific
+    ],
+
+    'shareasale' => [
+        'api_token' => env('SHAREASALE_API_TOKEN'),
+        'secret_key' => env('SHAREASALE_SECRET_KEY'),
+        'merchant_id' => env('SHAREASALE_MERCHANT_ID'),
+    ],
+
+];
 
