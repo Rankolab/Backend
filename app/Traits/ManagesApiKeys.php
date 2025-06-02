@@ -6,31 +6,20 @@ use App\Models\ExternalApiKey;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 trait ManagesApiKeys
 {
-    /**
-     * Get the appropriate API key for a given provider and user.
-     *
-     * Checks for a user-specific key first, then falls back to a default key
-     * defined in the configuration (config/services.php).
-     *
-     * @param string $providerName The name of the API provider (e.g., 'openai', 'google_pagespeed').
-     * @param User|null $user The user instance, if applicable.
-     * @return string|null The API key or null if not found.
-     */
     protected function getApiKeyForProvider(string $providerName, ?User $user = null): ?string
     {
         $apiKey = null;
-        $keySource = 'none'; // To track where the key came from
+        $keySource = 'none';
 
-        // 1. Check for user-specific key if user is provided
         if ($user) {
             try {
                 $userKeyRecord = ExternalApiKey::where("user_id", $user->id)
                     ->where("provider_name", $providerName)
-                    // Optionally add ->where("is_valid", true) if validation is implemented
                     ->first();
 
                 if ($userKeyRecord && !empty($userKeyRecord->api_key)) {
@@ -40,14 +29,11 @@ trait ManagesApiKeys
                 }
             } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
                 Log::error("Failed to decrypt API key for provider: {$providerName}, user: {$user->id}. Error: " . $e->getMessage());
-                // Optionally invalidate the key: $userKeyRecord->update(["is_valid" => false]);
-                $apiKey = null; // Ensure key is null if decryption fails
+                $apiKey = null;
             }
         }
 
-        // 2. Fallback to default key if no valid user key found
         if (!$apiKey) {
-            // Construct the config key path, e.g., 'services.openai.api_key'
             $configKey = "services.{$providerName}.api_key";
             $defaultKey = Config::get($configKey);
 
@@ -62,43 +48,50 @@ trait ManagesApiKeys
             Log::warning("No API key found (user or default) for provider: {$providerName}");
         }
 
-        // Optional: Log API usage (consider doing this closer to the actual API call)
-        // if ($apiKey) {
-        //     Log::channel("api_usage")->info("API Key retrieved", [
-        //         "provider" => $providerName,
-        //         "user_id" => $user ? $user->id : null,
-        //         "key_source" => $keySource
-        //     ]);
-        // }
-
         return $apiKey;
     }
 
     /**
-     * Placeholder for validating an API key.
-     *
-     * This should be implemented specifically for each service that needs validation.
-     *
-     * @param string $providerName
-     * @param string $apiKey
-     * @return bool
+     * Validate an API key with a real check depending on the provider.
      */
     protected function validateApiKey(string $providerName, string $apiKey): bool
     {
-        // Example: Make a test call to the provider's API
-        Log::warning("API key validation not implemented for provider: {$providerName}");
-        // For now, assume valid if provided
-        return !empty($apiKey);
+        try {
+            switch (strtolower($providerName)) {
+                case 'google':
+                    // Use PageSpeed API with dummy URL
+                    $response = Http::get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed', [
+                        'url' => 'https://example.com',
+                        'key' => $apiKey,
+                        'strategy' => 'desktop',
+                    ]);
+                    return $response->ok();
+
+                case 'huggingface':
+                    $testModel = 'gpt2'; // lightweight text model
+                    $response = Http::withToken($apiKey)
+                        ->timeout(10)
+                        ->post("https://api-inference.huggingface.co/models/{$testModel}", [
+                            'inputs' => 'Test',
+                        ]);
+                    return $response->ok();
+
+                case 'openai':
+                    $response = Http::withToken($apiKey)
+                        ->timeout(10)
+                        ->get("https://api.openai.com/v1/models");
+                    return $response->ok();
+
+                default:
+                    Log::warning("No validation logic implemented for provider: {$providerName}");
+                    return !empty($apiKey);
+            }
+        } catch (\Exception $e) {
+            Log::error("API key validation error for {$providerName}: " . $e->getMessage());
+            return false;
+        }
     }
 
-    /**
-     * Update the validation status of a user's API key.
-     *
-     * @param User $user
-     * @param string $providerName
-     * @param bool $isValid
-     * @return void
-     */
     protected function updateApiKeyValidationStatus(User $user, string $providerName, bool $isValid): void
     {
         try {
@@ -114,4 +107,5 @@ trait ManagesApiKeys
         }
     }
 }
+
 
