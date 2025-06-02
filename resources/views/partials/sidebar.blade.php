@@ -1,6 +1,5 @@
 <!-- Sidebar -->
-<aside class="sidebar fixed inset-y-0 left-0 w-64 transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-30"
-       :class="{'translate-x-0': sidebarOpen}">
+<aside class="sidebar fixed inset-y-0 left-0 w-64 transform md:translate-x-0 transition-transform duration-300 z-30" :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
     <div class="flex flex-col h-full">
         <!-- Logo -->
         <div class="sidebar-header">
@@ -156,3 +155,4 @@
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
 ></div>
+
