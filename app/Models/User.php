@@ -71,7 +71,6 @@ class User extends Authenticatable
      */
     public function websites()
     {
-        // Assuming a Website model exists and has a user_id foreign key
         return $this->hasMany(Website::class);
     }
 
@@ -80,7 +79,6 @@ class User extends Authenticatable
      */
     public function licenses()
     {
-        // Assuming a License model exists and has a user_id foreign key
         return $this->hasMany(License::class);
     }
 
@@ -89,8 +87,23 @@ class User extends Authenticatable
      */
     public function purchases()
     {
-        // Assuming a Purchase model exists and has a user_id foreign key
         return $this->hasMany(Purchase::class);
+    }
+
+    /**
+     * Get the affiliate record associated with the user.
+     */
+    public function affiliate()
+    {
+        return $this->hasOne(Affiliate::class);
+    }
+
+    /**
+     * Get the external API keys associated with the user.
+     */
+    public function externalApiKeys()
+    {
+        return $this->hasMany(ExternalApiKey::class);
     }
 
     // --- End Relationships ---
@@ -135,22 +148,6 @@ class User extends Authenticatable
     {
         return $this->password;
     }
-
-    /**
-     * Get the affiliate record associated with the user.
-     */
-    public function affiliate()
-    {
-        return $this->hasOne(Affiliate::class);
-    }
 }
-    /**
-     * Get the external API keys associated with the user.
-     */
-    public function externalApiKeys()
-    {
-        return $this->hasMany(ExternalApiKey::class);
-    }
 
-    // --- End Relationships ---
 
