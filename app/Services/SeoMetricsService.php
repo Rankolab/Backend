@@ -4,30 +4,27 @@ namespace App\Services;
 
 use Google\Client as GoogleClient;
 use Google\Service\PagespeedInsights;
-use Illuminate\Support\Facades\Http; // For simple HTTP calls if needed
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth; // Added for getting user
 use App\Models\WebsiteMetric;
 use App\Models\Website;
 use Carbon\Carbon;
+use App\Traits\ManagesApiKeys; // Import the trait
 
 class SeoMetricsService
 {
+    use ManagesApiKeys; // Use the trait
+
     protected $googleClient;
-    protected $apiKey; // Store API key
+    // Removed apiKey property, will fetch using trait
 
     public function __construct()
     {
-        // Initialize Google Client - API Key needed for PageSpeed Insights
-        // Search Console requires OAuth setup, which is more complex and needs user interaction
+        // Initialize Google Client - API Key will be fetched per request using the trait
         $this->googleClient = new GoogleClient();
-        // IMPORTANT: An API key needs to be configured in .env and loaded here
-        $this->apiKey = env("GOOGLE_API_KEY"); 
-        if ($this->apiKey) {
-            $this->googleClient->setDeveloperKey($this->apiKey);
-        } else {
-            Log::warning("GOOGLE_API_KEY is not set. PageSpeed Insights API will not work.");
-        }
         $this->googleClient->setApplicationName("Rankolab Backend");
+        // No API key set here directly
         // No OAuth setup here, as it requires user flow. Search Console integration will need separate handling.
     }
 
@@ -37,24 +34,36 @@ class SeoMetricsService
      */
     public function updatePageSpeedScore(Website $website)
     {
-        // Check if the API key was loaded during construction
-        if (!$this->apiKey) {
-            Log::error("Cannot update PageSpeed score: GOOGLE_API_KEY is missing.");
+        // Get the API key using the trait, passing the website's owner
+        $googleApiKey = $this->getApiKey("google", $website->user);
+
+        if (!$googleApiKey) {
+            Log::error("Cannot update PageSpeed score for website ID {$website->website_id}: Google API Key is missing or not configured.");
             return false;
         }
 
         try {
+            // Set the developer key for this specific request
+            $this->googleClient->setDeveloperKey($googleApiKey);
             $pagespeedService = new PagespeedInsights($this->googleClient);
-            $result = $pagespeedService->pagespeedapi->runpagespeed($website->domain, [
-                "strategy" => "DESKTOP" // Or MOBILE, or both
-            ]);
+            
+            // Fetch for both strategies if needed, or just one
+            $desktopResult = $pagespeedService->pagespeedapi->runpagespeed($website->domain, ["strategy" => "DESKTOP"]);
+            $mobileResult = $pagespeedService->pagespeedapi->runpagespeed($website->domain, ["strategy" => "MOBILE"]);
 
-            // Extract the performance score (0-100)
-            $score = $result->getLighthouseResult()->getCategories()->getPerformance()->getScore() * 100;
+            // Extract the performance scores (0-100)
+            $desktopScore = $desktopResult->getLighthouseResult()->getCategories()->getPerformance()->getScore() * 100;
+            $mobileScore = $mobileResult->getLighthouseResult()->getCategories()->getPerformance()->getScore() * 100;
+            
+            // Example: Use the average or prioritize one (e.g., mobile)
+            $finalScore = round(($desktopScore + $mobileScore) / 2);
 
             // Update the WebsiteMetric record
             $metrics = $website->metrics()->firstOrCreate(["website_id" => $website->website_id]);
-            $metrics->page_speed_score = round($score);
+            $metrics->page_speed_score = $finalScore; // Store the calculated score
+            // Optionally store desktop/mobile scores separately if needed
+            // $metrics->page_speed_desktop = round($desktopScore);
+            // $metrics->page_speed_mobile = round($mobileScore);
             $metrics->last_analyzed = Carbon::now(); // Update last analyzed time
             $metrics->save();
 
@@ -63,8 +72,7 @@ class SeoMetricsService
 
         } catch (\Exception $e) {
             Log::error("Error fetching PageSpeed Insights for website ID: " . $website->website_id . " - " . $e->getMessage());
-            // Check for API key specific errors (though the initial check should catch missing key)
-            if (str_contains($e->getMessage(), 'API key not valid')) {
+            if (str_contains($e->getMessage(), "API key not valid")) {
                  Log::error("Google API Key may be invalid or missing required permissions.");
             }
             return false;
@@ -74,73 +82,54 @@ class SeoMetricsService
     /**
      * Placeholder for updating metrics from Google Search Console.
      * Requires OAuth 2.0 setup and user consent.
-     * This would typically run as a scheduled job.
-     * Uses a free API (Google Search Console API).
      */
     public function updateSearchConsoleMetrics(Website $website)
     {
-        // 1. Check if user has authorized Google Search Console access (OAuth token storage/refresh needed).
-        // 2. Initialize Google Client with OAuth credentials.
-        // 3. Create Search Console service instance.
-        // 4. Query the API for performance data (clicks, impressions, ranking for keywords).
-        // 5. Update PerformanceMetric records in the database.
+        // OAuth logic would go here, potentially using a stored user token
         Log::info("Placeholder: updateSearchConsoleMetrics called for website ID: " . $website->website_id . ". Requires OAuth setup.");
-        // Example: Update last_analyzed time even if no data is fetched yet
         $metrics = $website->metrics()->firstOrCreate(["website_id" => $website->website_id]);
         $metrics->last_analyzed = Carbon::now();
         $metrics->save();
-        return true; // Return true for now
+        return true;
     }
 
     /**
      * Placeholder for updating Domain Authority and Backlinks.
-     * Note: Reliable DA and backlink data often requires paid APIs (e.g., Moz, Ahrefs, SEMrush).
-     * Free/open-source options are limited and less accurate.
-     * We will leave these as placeholders or use dummy data for now.
+     * Requires external APIs (e.g., Moz, Ahrefs) and API keys managed via the trait.
      */
     public function updateDomainAuthorityAndBacklinks(Website $website)
     {
-        Log::info("Placeholder: updateDomainAuthorityAndBacklinks called for website ID: " . $website->website_id . ". Requires external (likely paid) API or manual input.");
-        // Example: Update last_analyzed time
+        // Example: Fetching a hypothetical Moz API key
+        // $mozApiKey = $this->getApiKey("moz", $website->user);
+        // if ($mozApiKey) { ... call Moz API ... }
+        
+        Log::info("Placeholder: updateDomainAuthorityAndBacklinks called for website ID: " . $website->website_id . ". Requires external API integration.");
         $metrics = $website->metrics()->firstOrCreate(["website_id" => $website->website_id]);
-        // Optionally set dummy data if needed for testing
-        // $metrics->domain_authority = rand(10, 50); // Dummy data
-        // $metrics->backlinks_count = rand(100, 10000); // Dummy data
         $metrics->last_analyzed = Carbon::now();
         $metrics->save();
-        return true; // Return true for now
+        return true;
     }
 
     /**
      * Placeholder for updating SEO Score.
-     * This is often a composite score derived from various metrics.
-     * Calculation logic needs to be defined.
+     * Calculation logic needs refinement based on available metrics.
      */
      public function updateSeoScore(Website $website)
      {
          Log::info("Updating SEO Score for website ID: " . $website->website_id);
          $metrics = $website->metrics()->firstOrCreate(["website_id" => $website->website_id]);
          
-         // Basic SEO Score Calculation: Start with PageSpeed score
-         // As other metrics (DA, Backlinks, Search Console) are placeholders or require external setup,
-         // we will base the initial score primarily on the available PageSpeed score.
-         // This logic can be expanded later when more metrics are reliably available.
          $score = 0;
          if (isset($metrics->page_speed_score) && is_numeric($metrics->page_speed_score)) {
-             // Let's use PageSpeed as the main component for now (e.g., 100% weight)
-             // We can normalize it if needed, but for simplicity, let's use it directly.
              $score = $metrics->page_speed_score;
          } else {
              Log::warning("PageSpeed score not available for website ID: " . $website->website_id . ". SEO score calculation might be inaccurate.");
-             // Optionally, fetch PageSpeed score if not available
-             // $this->updatePageSpeedScore($website);
-             // $metrics->refresh(); // Refresh metrics after potential update
-             // $score = $metrics->page_speed_score ?? 0;
          }
 
-         // Ensure score is within 0-100 range
+         // Add other factors here when available (DA, backlinks, etc.)
+
          $metrics->seo_score = max(0, min(100, round($score)));
-         $metrics->last_analyzed = Carbon::now(); // Update last analyzed time
+         $metrics->last_analyzed = Carbon::now();
          $metrics->save();
 
          Log::info("Updated SEO score for website ID: " . $website->website_id . " to " . $metrics->seo_score);
@@ -149,7 +138,6 @@ class SeoMetricsService
 
     /**
      * Trigger updates for all relevant SEO metrics for a website.
-     * This would typically be called by a scheduled job.
      */
     public function updateAllMetrics(Website $website)
     {
@@ -161,4 +149,6 @@ class SeoMetricsService
         Log::info("Finished metric update for website ID: " . $website->website_id);
     }
 }
+
+
 
